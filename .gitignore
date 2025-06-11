@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/SignalRRealTimeApp/.vs
+/SignalRRealTimeApp/SignalRRealTimeApp/bin/Debug/net8.0
+/SignalRRealTimeApp/SignalRRealTimeApp/obj
+/SignalRRealTimeApp/SignalRRealTimeApp/SignalRRealTimeApp.csproj.user
+/SignalRRealTimeApp/SignalRRealTimeApp.DAL/bin/Debug/net8.0
+/SignalRRealTimeApp/SignalRRealTimeApp.DAL/obj/Debug/net8.0
+/SignalRRealTimeApp/SignalRRealTimeApp.DAL/obj
+/SignalRRealTimeApp/SignalRRealTimeApp.DTO/bin/Debug/net8.0
+/SignalRRealTimeApp/SignalRRealTimeApp.DTO/obj/Debug/net8.0
+/SignalRRealTimeApp/SignalRRealTimeApp.DTO/obj

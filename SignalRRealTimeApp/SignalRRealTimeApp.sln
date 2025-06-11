@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRRealTimeApp", "SignalRRealTimeApp\SignalRRealTimeApp.csproj", "{6043C1AC-F452-46F9-AC34-DFA88D6FF297}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRRealTimeApp.DTO", "SignalRRealTimeApp.DTO\SignalRRealTimeApp.DTO.csproj", "{D25D112A-A24F-46F0-A3D7-31A678D986EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRRealTimeApp.DAL", "SignalRRealTimeApp.DAL\SignalRRealTimeApp.DAL.csproj", "{75E917E0-0CF3-44A3-8536-CB50160DA8AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6043C1AC-F452-46F9-AC34-DFA88D6FF297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6043C1AC-F452-46F9-AC34-DFA88D6FF297}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6043C1AC-F452-46F9-AC34-DFA88D6FF297}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6043C1AC-F452-46F9-AC34-DFA88D6FF297}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D25D112A-A24F-46F0-A3D7-31A678D986EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D25D112A-A24F-46F0-A3D7-31A678D986EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D25D112A-A24F-46F0-A3D7-31A678D986EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D25D112A-A24F-46F0-A3D7-31A678D986EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75E917E0-0CF3-44A3-8536-CB50160DA8AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75E917E0-0CF3-44A3-8536-CB50160DA8AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75E917E0-0CF3-44A3-8536-CB50160DA8AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75E917E0-0CF3-44A3-8536-CB50160DA8AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

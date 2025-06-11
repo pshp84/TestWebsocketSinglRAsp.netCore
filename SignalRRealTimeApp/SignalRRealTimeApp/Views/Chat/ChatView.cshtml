@@ -1,0 +1,205 @@
+﻿<!-- Real-Time Chat UI with SignalR and Bootstrap -->
+@{
+    ViewData["Title"] = "Real-Time Chat";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="row mb-3">
+    
+    <div class="my-5 shadow rounded" style="margin-bottom:80px!important;">
+            <div class="chat-header bg-success text-white p-2 rounded-top d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chat Room</h5>
+                <span id="status" class="small">Connected</span>
+                <button class="btn btn-sm btn-light text-danger" id="clearBtn">Clear</button>
+            </div>
+
+            <div id="chatBox" class="bg-light px-3 py-2" style="height: 200px; overflow-y: auto; border-bottom: 1px solid #ccc;word-break: break-word;">
+                <!-- Messages will appear here -->
+            </div>
+
+            <div class="chat-input d-flex p-3 bg-white rounded-bottom">
+                <input type="text" id="userInput" class="form-control me-2" maxlength="200" placeholder="User Name" style="max-width: 150px;" />
+                <span id="userError" style="color:red;"></span>
+                <input type="text" id="messageInput" class="form-control me-2" maxlength="4000" placeholder="Type your message..." />
+                <span id="messageError" style="color:red;"></span>
+                <button id="sendButton" class="btn btn-success">Send</button>
+            </div>
+            <div class="bg-light p-3 rounded mb-4">
+                <h6 class="mb-3">🔧 Group / Private Messaging</h6>
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <input type="text" id="groupNameInput" class="form-control" placeholder="Group name">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-primary w-100" onclick="joinGroupHandler()">Join Group</button>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" onclick="leaveGroupHandler()">Leave Group</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <input type="text" id="connectionIdInput" class="form-control" placeholder="Connection ID">
+                    </div>
+                    <div class="col-md-7">
+                        <input type="text" id="privateMessageInput" class="form-control" placeholder="Private message">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-success w-100" onclick="sendPrivateMessageHandler()">Send Private</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+   
+    <div class="bg-info text-white rounded mb-5 pt-2">
+        <h6 class="mb-3">📊 Real-Time Group & Connection Report</h6>
+        <button class="btn btn-light btn-sm mb-3" onclick="loadStats()">🔄 Refresh Stats</button>
+        <div id="statsReport"></div>
+    </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    // Load existing messages
+    fetch('/Chat/GetMessages')
+        .then(response => response.json())
+        .then(messages => {
+            const chatBox = document.getElementById("chatBox");
+            messages.forEach(m => {
+                const msg = `<div><strong>${m.user}</strong>: ${m.message}</div>`;
+                chatBox.innerHTML += msg;
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub", {
+            transport: signalR.HttpTransportType.WebSockets
+        })
+        .withAutomaticReconnect({
+            nextRetryDelayInMilliseconds: retryContext => Math.min(retryContext.previousRetryCount * 1000, 10000)
+        })
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    connection.on("ReceiveMessage", (user, message) => {
+        const chatBox = document.getElementById("chatBox");
+        const msg = `<div><strong>${user}</strong>: ${message}</div>`;
+        chatBox.innerHTML += msg;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    async function startConnection() {
+        try {
+            await connection.start();
+            document.getElementById("status").innerText = "Connected";
+            console.log("Connected to SignalR!");
+        } catch (err) {
+            console.error("Connection failed. Retrying in 5s", err);
+            document.getElementById("status").innerText = "Disconnected";
+            setTimeout(startConnection, 5000);
+        }
+    }
+
+    connection.onreconnecting(() => document.getElementById("status").innerText = "Reconnecting...");
+    connection.onreconnected(() => document.getElementById("status").innerText = "Connected");
+    connection.onclose(() => document.getElementById("status").innerText = "Disconnected");
+
+    startConnection();
+
+    document.getElementById("sendButton").addEventListener("click", () => {
+        const user = document.getElementById("userInput").value;
+        const message = document.getElementById("messageInput").value;
+        if (user && message) {
+            connection.invoke("SendMessage", user, message).catch(err => console.error(err));
+            document.getElementById("messageInput").value = "";
+        }
+        else{
+            alert("User Name and Message is Required")
+        }
+    });
+
+    document.getElementById("messageInput").addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            document.getElementById("sendButton").click();
+        }
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", function () {
+        fetch('/Chat/ClearMessages', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                document.getElementById("chatBox").innerHTML = "";
+                alert("All messages cleared.");
+            } else {
+                alert("Failed to clear messages.");
+            }
+        });
+    });
+
+    // Optional utility methods for group and private message testing
+    function joinGroup(groupName) {
+        connection.invoke("JoinGroup", groupName);
+    }
+    function leaveGroup(groupName) {
+        connection.invoke("LeaveGroup", groupName);
+    }
+    function sendToConnection(connectionId, message) {
+        connection.invoke("SendToUser", connectionId, message);
+    }
+
+    function joinGroupHandler() {
+        const groupName = document.getElementById("groupNameInput").value;
+        if (groupName) {
+            joinGroup(groupName);
+            alert(`Joined group: ${groupName}`);
+        }else{
+            alert("Please enter Group Name")
+        }
+    }
+
+    function leaveGroupHandler() {
+        const groupName = document.getElementById("groupNameInput").value;
+        if (groupName) {
+            leaveGroup(groupName);
+            alert(`Left group: ${groupName}`);
+            $('#groupNameInput').val('');
+        }
+        else{
+            alert("Please enter Group Name")
+        }
+
+    }
+
+    function sendPrivateMessageHandler() {
+        const connectionId = document.getElementById("connectionIdInput").value;
+        const message = document.getElementById("privateMessageInput").value;
+        if (connectionId && message) {
+            sendToConnection(connectionId, message);
+            alert("Private message sent!");
+        }
+        else{
+            alert("Please enter Connection Id and Message")
+        }
+    }
+
+    function loadStats() {
+        fetch('/Chat/GetConnectionStats')
+            .then(response => response.json())
+            .then(data => {
+                let html = `<strong>Total Connections:</strong> ${data.totalConnections}<br/><strong>Groups:</strong><ul>`;
+                for (const [group, count] of Object.entries(data.groups)) {
+                    html += `<li><strong>${group}</strong>: ${count} member(s)</li>`;
+                }
+                html += '</ul>';
+                document.getElementById("statsReport").innerHTML = html;
+            });
+    }
+
+</script>
