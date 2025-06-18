@@ -8,52 +8,55 @@
 <div class="row mb-3">
     
     <div class="my-5 shadow rounded" style="margin-bottom:80px!important;">
-            <div class="chat-header bg-success text-white p-2 rounded-top d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Chat Room</h5>
-                <span id="status" class="small">Connected</span>
-                <button class="btn btn-sm btn-light text-danger" id="clearBtn">Clear</button>
+        <div class="chat-header bg-success text-white p-2 rounded-top d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Chat Room</h5>
+            <span id="status" class="small">Connected</span>
+            <button class="btn btn-sm btn-light text-danger" id="clearBtn">Clear</button>
+        </div>
+
+        <div id="chatBox" class="bg-light px-3 py-2" style="height: 300px; overflow-y: auto; border-bottom: 1px solid #ccc; word-break: break-word;">
+            <!-- Messages will appear here -->
+        </div>
+
+        <div class="chat-input d-flex p-3 bg-white rounded-bottom">
+            <input type="text" id="userInput" class="form-control me-2" maxlength="200" placeholder="User Name" style="max-width: 150px;" />
+            <span id="userError" style="color:red;"></span>
+            <input type="text" id="messageInput" class="form-control me-2" maxlength="4000" placeholder="Type your message..." />
+            <input type="file" id="fileInput" class="form-control me-2" accept="*" style="max-width: 220px;" />
+            <span id="messageError" style="color:red;"></span>
+            <button id="sendButton" class="btn btn-success">Send</button>
+        </div>
+
+        <div class="bg-light p-3 rounded mb-4">
+            <h6 class="mb-3">🔧 Group / Private Messaging</h6>
+            <div class="row mb-2">
+                <div class="col-md-3">
+                    <input type="text" id="groupNameInput" class="form-control" placeholder="Group name">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="joinGroupHandler()">Join Group</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" onclick="leaveGroupHandler()">Leave Group</button>
+                </div>
+            </div>  
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" id="connectionIdInput" class="form-control" placeholder="Connection ID">
+                </div>
+                <div class="col-md-7">
+                    <input type="text" id="privateMessageInput" class="form-control" placeholder="Private message">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-success w-100" onclick="sendPrivateMessageHandler()">Send Private</button>
+                </div>
             </div>
 
-            <div id="chatBox" class="bg-light px-3 py-2" style="height: 200px; overflow-y: auto; border-bottom: 1px solid #ccc;word-break: break-word;">
-                <!-- Messages will appear here -->
-            </div>
-
-            <div class="chat-input d-flex p-3 bg-white rounded-bottom">
-                <input type="text" id="userInput" class="form-control me-2" maxlength="200" placeholder="User Name" style="max-width: 150px;" />
-                <span id="userError" style="color:red;"></span>
-                <input type="text" id="messageInput" class="form-control me-2" maxlength="4000" placeholder="Type your message..." />
-                <span id="messageError" style="color:red;"></span>
-                <button id="sendButton" class="btn btn-success">Send</button>
-            </div>
-            <div class="bg-light p-3 rounded mb-4">
-                <h6 class="mb-3">🔧 Group / Private Messaging</h6>
-                <div class="row mb-2">
-                    <div class="col-md-3">
-                        <input type="text" id="groupNameInput" class="form-control" placeholder="Group name">
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-primary w-100" onclick="joinGroupHandler()">Join Group</button>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-secondary w-100" onclick="leaveGroupHandler()">Leave Group</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <input type="text" id="connectionIdInput" class="form-control" placeholder="Connection ID">
-                    </div>
-                    <div class="col-md-7">
-                        <input type="text" id="privateMessageInput" class="form-control" placeholder="Private message">
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-success w-100" onclick="sendPrivateMessageHandler()">Send Private</button>
-                    </div>
-                </div>
-            </div>
+        </div>
     </div>
 
    
-    <div class="bg-info text-white rounded mb-5 pt-2">
+    <div class="bg-info text-white rounded mb-5 pt-2" style="display:none;">
         <h6 class="mb-3">📊 Real-Time Group & Connection Report</h6>
         <button class="btn btn-light btn-sm mb-3" onclick="loadStats()">🔄 Refresh Stats</button>
         <div id="statsReport"></div>
@@ -64,34 +67,76 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
     // Load existing messages
+    
     fetch('/Chat/GetMessages')
         .then(response => response.json())
         .then(messages => {
             const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML = "";
+
             messages.forEach(m => {
-                const msg = `<div><strong>${m.user}</strong>: ${m.message}</div>`;
-                chatBox.innerHTML += msg;
+                const msgDiv = document.createElement("div");
+
+                // Text message
+                if (m.message) {
+                    const textMsg = `<strong>${m.user}</strong>: ${m.message}`;
+                    msgDiv.innerHTML = textMsg;
+                }
+
+                // Image if available
+                if (m.fileUrl) {
+                    const img = document.createElement("img");
+                    img.src = m.fileUrl;
+                    img.alt = "sent image";
+                    img.style.maxWidth = "200px";
+                    img.style.display = "block";
+                    img.classList.add("mt-2", "rounded");
+                    msgDiv.appendChild(img);
+                }
+
+                chatBox.appendChild(msgDiv);
             });
+
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/notificationHub", {
-            transport: signalR.HttpTransportType.WebSockets
-        })
-        .withAutomaticReconnect({
-            nextRetryDelayInMilliseconds: retryContext => Math.min(retryContext.previousRetryCount * 1000, 10000)
-        })
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
 
-    connection.on("ReceiveMessage", (user, message) => {
+
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/notificationHub", {
+        transport: signalR.HttpTransportType.WebSockets
+    })
+    .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: retryContext => Math.min(retryContext.previousRetryCount * 1000, 10000)
+    })
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+
+    connection.on("ReceiveMessage", (user, message, fileUrl) => {
         const chatBox = document.getElementById("chatBox");
-        const msg = `<div><strong>${user}</strong>: ${message}</div>`;
-        chatBox.innerHTML += msg;
+        const msgDiv = document.createElement("div");
+
+        if (message) {
+            msgDiv.innerHTML = `<strong>${user}</strong>: ${message}`;
+        }
+
+        if (fileUrl) {
+            const img = document.createElement("img");
+            img.src = fileUrl;
+            img.style.maxWidth = "200px";
+            img.style.display = "block";
+            img.classList.add("mt-2", "rounded");
+            msgDiv.appendChild(img);
+        }
+
+        chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
+
+
+   
     async function startConnection() {
         try {
             await connection.start();
@@ -110,17 +155,46 @@
 
     startConnection();
 
-    document.getElementById("sendButton").addEventListener("click", () => {
-        const user = document.getElementById("userInput").value;
-        const message = document.getElementById("messageInput").value;
-        if (user && message) {
-            connection.invoke("SendMessage", user, message).catch(err => console.error(err));
-            document.getElementById("messageInput").value = "";
+    document.getElementById("sendButton").addEventListener("click", async function () {
+        const user = document.getElementById("userInput").value.trim();
+        const message = document.getElementById("messageInput").value.trim();
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+
+        if (!user) {
+            alert("Please select a user.");
+            return;
         }
-        else{
-            alert("User Name and Message is Required")
+        if (!message && !file) {
+            alert("Please enter a message or select a file to send.");
+            return;
         }
+        if (file && file.size > 2 * 1024 * 1024) {
+            alert("Max file size is 2 MB.");
+            return;
+        }
+        let fileName = null;
+        let fileBase64 = null;
+
+        if (file) {
+            fileName = file.name;
+            const reader = new FileReader();
+            reader.onload = async function () {
+                fileBase64 = reader.result.split(',')[1]; // remove the base64 prefix
+                await connection.invoke("SendMessage", user, message, fileName, fileBase64)
+                    .catch(err => console.error(err.toString()));
+            };
+            reader.readAsDataURL(file); // triggers `onload` above
+        } else {
+            await connection.invoke("SendMessage", user, message, null, null)
+                .catch(err => console.error(err.toString()));
+        }
+
+        document.getElementById("messageInput").value = "";
+        fileInput.value = "";
     });
+
+    
 
     document.getElementById("messageInput").addEventListener("keypress", function (e) {
         if (e.key === "Enter") {
@@ -182,7 +256,7 @@
         const message = document.getElementById("privateMessageInput").value;
         if (connectionId && message) {
             sendToConnection(connectionId, message);
-            alert("Private message sent!");
+            $("#chatBox").focus();
         }
         else{
             alert("Please enter Connection Id and Message")
@@ -200,6 +274,37 @@
                 html += '</ul>';
                 document.getElementById("statsReport").innerHTML = html;
             });
+    }
+
+    //=------------------------------------------
+    const groupConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationhub")
+        .configureLogging(signalR.LogLevel.Information)
+        .withAutomaticReconnect()
+        .build();
+
+    // 🟢 Start the SignalR connection
+    groupConnection.start().then(() => {
+        console.log("SignalR groupConnection established");
+        loadGroups();
+    }).catch(err => console.error(err));
+
+    // 🔁 Load available groups from server
+    async function loadGroups() {
+        const response = await fetch('/group/list');
+        const groups = await response.json();
+        const list = document.getElementById("groupList");
+        list.innerHTML = '';
+
+        groups.forEach(g => {
+            const li = document.createElement('li');
+            li.textContent = g.groupName + ' (created by ' + g.createdBy + ')';
+            const joinBtn = document.createElement('button');
+            joinBtn.textContent = "Join";
+            joinBtn.onclick = () => joinGroup(g.groupName);
+            li.appendChild(joinBtn);
+            list.appendChild(li);
+        });
     }
 
 </script>

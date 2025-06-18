@@ -1,5 +1,4 @@
 ﻿using SignalRRealTimeApp.DTO;
-using SignalRRealTimeApp.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace SignalRRealTimeApp.DAL.IServices
 {
-    public interface IErrorLogService
+    public interface IGroupService
     {
-        Task<bool> LogAsync(ErrorLog error);
-        Task<ErrorLogRes> GetErrorAsync(DTPagination data, FilterErrorReqDTO filter);
+        Task<bool> CreateGroupAsync(GroupDTO group);
+        Task<bool> GroupExistsAsync(string groupName);
+        Task<List<GroupDTO>> GetAllGroupsAsync();
     }
 }

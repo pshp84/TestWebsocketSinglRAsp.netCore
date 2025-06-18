@@ -1,0 +1,165 @@
+﻿@{
+    ViewData["Title"] = "Group Chat";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container mb-4 mt-1">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>Group Chat with SignalR</h5>
+        </div>
+        <div class="card-body">
+            <div class="border p-3 bg-light" id="groupMessageLog" style="height: 200px; overflow-y: auto;"></div>
+            
+            <div class="mb-3">
+                <label for="createGroupName" class="form-label">Create Group</label>
+                <input type="text" id="createGroupName" class="form-control" placeholder="Enter group name" />
+                <small id="createGroupError" class="text-danger d-none">Please enter a group name.</small>
+                <button class="btn btn-success mt-2" onclick="createGroup()">Create Group</button>
+            </div>
+
+            
+            <h6>Available Groups:</h6>
+            <ul id="groupList" class="list-group mb-4"></ul>
+
+            
+            <div class="mb-3">
+                <label for="joinGroupName" class="form-label">Join / Leave Group</label>
+                <input type="text" id="joinGroupName" class="form-control" placeholder="Enter group name" />
+                <small id="joinGroupError" class="text-danger d-none">Please enter a group name to join or leave.</small>
+                <div class="mt-2">
+                    <button class="btn btn-outline-primary me-2" onclick="joinGroupHandler()">Join Group</button>
+                    <button class="btn btn-outline-danger" onclick="leaveGroupHandler()">Leave Group</button>
+                </div>
+                <div id="groupStatus" class="text-success mt-2"></div>
+            </div>
+
+            
+            <div class="mb-3">
+                <label class="form-label">Send Message to Group</label>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input type="text" id="userName" class="form-control" placeholder="Your Name" />
+                        <small id="userNameError" class="text-danger d-none">Please enter your name.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="groupMessage" class="form-control" placeholder="Your Message" />
+                        <small id="groupMessageError" class="text-danger d-none">Please enter a message.</small>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary w-100" onclick="sendGroupMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            
+            
+
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const groupConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationhub")
+        .withAutomaticReconnect()
+        .build();
+
+    groupConnection.start().then(loadGroups).catch(err => console.error(err));
+
+    groupConnection.on("ReceiveMessage", (user, message) => {
+        const log = document.getElementById("groupMessageLog");
+        const entry = document.createElement("div");
+        entry.innerHTML = `<strong>${user}</strong>: ${message}`;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+    });
+
+    async function loadGroups() {
+        const response = await fetch('/Chat/GetGroups');
+        const groups = await response.json();
+        const list = document.getElementById("groupList");
+        list.innerHTML = '';
+
+        groups.forEach(g => {
+            const li = document.createElement('li');
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.textContent = `${g.groupName} (by ${g.createdBy})`;
+            const joinBtn = document.createElement('button');
+            joinBtn.textContent = "Join";
+            joinBtn.className = "btn btn-sm btn-outline-primary ms-2";
+            joinBtn.onclick = () => joinGroup(g.groupName);
+            li.appendChild(joinBtn);
+            list.appendChild(li);
+        });
+    }
+
+    function showError(id, show) {
+        document.getElementById(id).classList.toggle("d-none", !show);
+    }
+
+    async function createGroup() {
+        const name = document.getElementById("createGroupName").value.trim();
+        if (!name) {
+            showError("createGroupError", true);
+            return;
+        }
+        showError("createGroupError", false);
+
+        const success = await groupConnection.invoke("CreateGroup", name);
+        if (success) {
+            alert("Group created!");
+            document.getElementById("createGroupName").value = "";
+            loadGroups();
+        } else {
+            alert("Group already exists.");
+        }
+    }
+
+    async function joinGroup(groupName) {
+        await groupConnection.invoke("JoinGroup", groupName);
+        document.getElementById("groupStatus").textContent = `You joined group: ${groupName}`;
+    }
+
+    async function leaveGroup(groupName) {
+        await groupConnection.invoke("LeaveGroup", groupName);
+        document.getElementById("groupStatus").textContent = `You left group: ${groupName}`;
+    }
+
+    function joinGroupHandler() {
+        const name = document.getElementById("joinGroupName").value.trim();
+        if (!name) {
+            showError("joinGroupError", true);
+            return;
+        }
+        showError("joinGroupError", false);
+        joinGroup(name);
+    }
+
+    function leaveGroupHandler() {
+        const name = document.getElementById("joinGroupName").value.trim();
+        if (!name) {
+            showError("joinGroupError", true);
+            return;
+        }
+        showError("joinGroupError", false);
+        leaveGroup(name);
+    }
+
+    async function sendGroupMessage() {
+        const user = document.getElementById("userName").value.trim();
+        const message = document.getElementById("groupMessage").value.trim();
+
+        let isValid = true;
+        showError("userNameError", !user);
+        showError("groupMessageError", !message);
+
+        if (!user || !message) return;
+
+        await groupConnection.invoke("SendMessageToGroup", user, message);
+        document.getElementById("groupMessage").value = "";
+    }
+</script>
+
+

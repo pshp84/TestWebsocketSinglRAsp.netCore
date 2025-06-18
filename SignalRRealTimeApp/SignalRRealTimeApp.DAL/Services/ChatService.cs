@@ -1,4 +1,5 @@
-﻿using SignalRRealTimeApp.DAL.IServices;
+﻿using SignalRRealTimeApp.DAL.IRepository;
+using SignalRRealTimeApp.DAL.IServices;
 using SignalRRealTimeApp.DTO;
 
 
@@ -6,28 +7,28 @@ namespace SignalRRealTimeApp.DAL.Services
 {
     public class ChatService : IChatService
     {
-        private readonly List<ChatMessageDTO> _messages = new();
-        public  async Task<bool> AddMessage(ChatMessageDTO message)
+        private readonly IChatRepository _chatRepository;
+
+        public ChatService(IChatRepository chatRepository)
         {
-            if(message == null) return false;
-            _messages.Add(message);
-            return true;
+        _chatRepository = chatRepository;
+        }
+        public  async Task<ChatMessageDTO> AddMessage(ChatMessageDTO message)
+        {
+            var res= await _chatRepository.AddChatMessage(message);  
+            return res; 
         }
 
         public async Task<List<ChatMessageDTO>> GetAllMessages()
         {
-            return  _messages.ToList();
+           var res=await _chatRepository.GetAllChatMessages();
+            return res; 
         }
 
         public async Task<bool> ClearAllMessages()
         {
-            if (_messages.Count() > 0)
-            {
-                _messages.Clear();
-                return !_messages.Any();
-
-            }         
-            else {return false; }   
+            var res=await _chatRepository.RemoveAllMessage();
+            return res;  
         }
     }
 }

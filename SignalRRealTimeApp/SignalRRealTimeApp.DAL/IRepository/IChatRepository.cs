@@ -1,5 +1,4 @@
 ﻿using SignalRRealTimeApp.DTO;
-using SignalRRealTimeApp.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace SignalRRealTimeApp.DAL.IRepository
 {
-    public interface IErrorLogRepository
+    public interface IChatRepository
     {
-        Task<bool> ErrorLogAsync(ErrorLog error);
-        Task<ErrorLogRes> ErrorLogAsync(DTPagination data, FilterErrorReqDTO filter);
+        Task<ChatMessageDTO> AddChatMessage(ChatMessageDTO data);
+        Task<List<ChatMessageDTO>> GetAllChatMessages();
+        Task<bool> RemoveAllMessage();
     }
 }

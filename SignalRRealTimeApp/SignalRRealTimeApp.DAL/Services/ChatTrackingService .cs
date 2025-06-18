@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace SignalRRealTimeApp.DAL.Services
 {
-    public class ChatTrackingService: IChatTrackingService
+    public class ChatTrackingService : IChatTrackingService
     {
         private readonly ConcurrentDictionary<string, byte> _connections = new();
-        private readonly ConcurrentDictionary<string, HashSet<string>> _groups = new();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _groups = new();
+
         public Task<bool> AddConnectionAsync(string connectionId)
         {
             var result = _connections.TryAdd(connectionId, 0);
@@ -24,23 +25,24 @@ namespace SignalRRealTimeApp.DAL.Services
 
         public Task<bool> AddToGroupAsync(string groupName, string connectionId)
         {
-            var group = _groups.GetOrAdd(groupName, _ => new HashSet<string>());
+            var group = _groups.GetOrAdd(groupName, _ => new ConcurrentDictionary<string, byte>());
+            Console.WriteLine($"Before Add: {groupName} Count = {group.Count}");
 
-            lock (group)
-            {
-                return Task.FromResult(group.Add(connectionId));
-            }
+            var result = group.TryAdd(connectionId, 0);
+
+            Console.WriteLine($"After Add: {groupName} Count = {group.Count}");
+
+            return Task.FromResult(result);
         }
 
         public Task<bool> RemoveFromGroupAsync(string groupName, string connectionId)
         {
             if (_groups.TryGetValue(groupName, out var group))
             {
-                lock (group)
-                {
-                    return Task.FromResult(group.Remove(connectionId));
-                }
+                var result = group.TryRemove(connectionId, out _);
+                return Task.FromResult(result);
             }
+
             return Task.FromResult(false);
         }
 
@@ -55,5 +57,4 @@ namespace SignalRRealTimeApp.DAL.Services
             return Task.FromResult(_connections.Count);
         }
     }
-
 }

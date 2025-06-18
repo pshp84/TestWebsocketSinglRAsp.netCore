@@ -9,8 +9,8 @@ namespace SignalRRealTimeApp.DAL.IServices
 {
     public interface IChatService
     {
-       Task<bool>AddMessage(ChatMessageDTO message);
+       Task<ChatMessageDTO> AddMessage(ChatMessageDTO message);
        Task <List<ChatMessageDTO>> GetAllMessages();
-        Task<bool> ClearAllMessages();
+       Task<bool> ClearAllMessages();
     }
 }

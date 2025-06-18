@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SignalRRealTimeApp.DTO\SignalRRealTimeApp.DTO.csproj" />
+    <ProjectReference Include="..\SignalRRealTimeApp.Entity\SignalRRealTimeApp.Entity.csproj" />
   </ItemGroup>
 
 </Project>

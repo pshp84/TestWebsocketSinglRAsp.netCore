@@ -13,8 +13,13 @@ namespace SignalRRealTimeApp.Setup
             services.AddTransient<IChatService,ChatService>();
             services.AddTransient<IChatTrackingService, ChatTrackingService>();
             services.AddTransient<IErrorLogService, ErrorLogService>();
+            services.AddTransient<ILiveLogService, LiveLogService>();
+            services.AddTransient<IGroupService, GroupService>();
+
 
             services.AddTransient<IErrorLogRepository, ErrorLogRepository>();
+            services.AddTransient<IChatRepository, ChatRepository>();
+
         }
     }
 }

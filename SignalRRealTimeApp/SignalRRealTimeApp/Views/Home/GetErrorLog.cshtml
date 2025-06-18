@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "GetErrorLog";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    body {
+        background-color: #ECECEC;
+    }
+
+    table.dataTable thead{
+        border-top: 1px solid #dee2e6 !important; /* Bootstrap default border */
+    }
+
+    div.dataTables_scrollHead thead th {
+        border-top: 1px solid #dee2e6 !important;
+    }
+</style>
+
+        <div class="row mb-2 mx-1">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Error Log</h1>
+            </div>
+        </div>
+    
+
+
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <div id="example2_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                        <div class="row"><div class="col-sm-12 col-md-6"></div><div class="col-sm-12 col-md-6"></div></div><div class="row">
+                            <div class="col-sm-12">
+                                <table id="DTError" class="table table-bordered table-hover dataTable dtr-inline" aria-describedby="example2_info">
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+
+<!-- jQuery (Required by DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+@section scripts {
+    <script>
+        
+                $(document).ready(function () {
+            $('#DTError').DataTable({
+                aaSorting: [],
+                processing: true,
+                bDestroy: true,
+                serverSide: true,
+                scrollX: true,
+                "ajax": {
+                    url: "/Home/GetAllErrorLog",
+                    type: "POST",
+                    data: function (d) {
+                        d.Status = 1; // Filter value
+                    }
+                },
+                "columns": [
+                   
+                    { "title": "Error Message", "data": "message" },
+                    { "title": "URL", "data": "url" },
+                    { "title": "Status", "data": "status" },
+                    { "title": "Stack Trace", "data": "stackTrace","width" :"300px"},
+                    {
+                        "title": "Created On",
+                        "data": "createdon",
+                        "render": function (data, type, row) {
+                            if (!data) return '';
+                            const date = new Date(data);
+                            return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                        }
+                    }
+                ]
+            });
+        });
+
+    </script>
+}
+
+

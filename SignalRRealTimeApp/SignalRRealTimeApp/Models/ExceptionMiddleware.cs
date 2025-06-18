@@ -10,15 +10,12 @@ namespace SignalRRealTimeApp.Models
         private readonly RequestDelegate _next;
         private readonly IErrorLogService _errorLogService;
         private readonly IConfiguration _configuration;
-        private readonly int _dberror;
-        private readonly int _emailerror;
         public ExceptionMiddleware(RequestDelegate next, IConfiguration configuration, IErrorLogService errorLogServices)
         {
             _next = next;
             _errorLogService = errorLogServices;
             _configuration = configuration;
-            _dberror = Convert.ToInt32(_configuration["ErrorLog:Database"]);
-            _emailerror = Convert.ToInt32(_configuration["ErrorLog:Email"]);
+           
         }
 
         public object User { get; private set; }
@@ -48,15 +45,15 @@ namespace SignalRRealTimeApp.Models
                 var response = context.Response;
                 response.ContentType = "application/json";
                 var hostname = response.HttpContext.Request.Host.Value;
+                var routeData = context.GetRouteData();
                 ErrorLog errorLog = new ErrorLog();
                 errorLog.Message = ex.Message; 
                 errorLog.StackTrace = ex.StackTrace;
+                errorLog.Controller= routeData?.Values["controller"]?.ToString();
                 errorLog.Url = hostname + response.HttpContext.Request.Path.Value;
                 errorLog.Action = "UnhandledException";
                 errorLog.InnerException = Convert.ToString(ex?.InnerException);
                 _errorLogService.LogAsync(errorLog).Wait();
-                
-
                 response.Redirect("/Home/Error", true);
             }
         }

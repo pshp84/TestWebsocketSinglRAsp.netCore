@@ -15,4 +15,8 @@
     <ProjectReference Include="..\SignalRRealTimeApp.DAL\SignalRRealTimeApp.DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
+  </ItemGroup>
+
 </Project>

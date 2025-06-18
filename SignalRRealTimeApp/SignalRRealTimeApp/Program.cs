@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR(options =>
 {
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
 });
 DependenciesConfig.ConfigureDependencies(builder.Services);
 var app = builder.Build();
@@ -37,5 +38,4 @@ app.UseEndpoints(endpoints =>
         pattern: "{controller=Home}/{action=Index}/{id?}");
     endpoints.MapHub<NotificationHub>("/notificationHub");
 });
-
 app.Run();

@@ -1,0 +1,34 @@
+﻿
+@{
+    ViewData["Title"] = "Logs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Logs</h1>
+
+<div id="logPanel" style="height: 300px; overflow-y: auto; border: 1px solid gray; padding: 10px;"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    
+    connection.on("ReceiveLog", function (log) {
+        const panel = document.getElementById("logPanel");
+        const logDiv = document.createElement("div");
+        logDiv.textContent = log;
+        panel.appendChild(logDiv);
+        panel.scrollTop = panel.scrollHeight;
+    });
+
+    
+    connection.start()
+        .then(() => {
+            console.log("SignalR Connected");
+        })
+        .catch(err => console.error("SignalR connection error:", err));
+</script>
+
